@@ -3,8 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\Task;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class TaskController extends Controller
 {
@@ -35,7 +36,14 @@ class TaskController extends Controller
             'status' => 'required|in:pending,in_progress,completed',
         ]);
 
-        $task = $request->user()->tasks()->create($request->all());
+        $data = $request->all();
+
+        if ($request->hasFile('attachment')) {
+            $path = $request->file('attachment')->store('tasks', config('filesystems.default'));
+            $data['attachment'] = $path;
+        }
+
+        $task = $request->user()->tasks()->create($data);
 
         return response()->json([
             'message' => 'Task created successfully',
@@ -67,9 +75,21 @@ class TaskController extends Controller
         $request->validate([
             'title' => 'sometimes|required|string|max:255',
             'status' => 'sometimes|required|in:pending,in_progress,completed',
+            'attachment' => 'nullable|file|mimes:jpg,png,pdf,docx|max:2048',
         ]);
 
-        $task->update($request->all());
+        $data = $request->all();
+
+        if ($request->hasFile('attachment')) {
+            if ($task->attachment) {
+                Storage::disk(config('filesystems.default'))->delete($task->attachment);
+            }
+
+            $path = $request->file('attachment')->store('tasks', config('filesystems.default'));
+            $data['attachment'] = $path;
+        }
+
+        $task->update($data);
 
         return response()->json([
             'message' => 'Task updated successfully',
