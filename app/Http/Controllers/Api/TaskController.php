@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Task;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class TaskController extends Controller
 {
@@ -14,15 +16,20 @@ class TaskController extends Controller
      */
     public function index(Request $request)
     {
-        $query = $request->user()->tasks();
+        $userId = $request->user()->id;
+        $status = $request->query('status', 'all');
+        $cacheKey = "user_{$userId}_tasks_{$status}";
 
-        if ($request->has('status')) {
-            $query->where('status', $request->status);
-        }
+        return Cache::remember($cacheKey, 3600, function () use ($request) {
+            $query = $request->user()->tasks();
 
-        $tasks = $query->latest()->get();
+            if ($request->has('status')) {
+                $query->where('status', $request->status);
+            }
 
-        return response()->json($tasks);
+            Log::info("--- I am fetching from the DATABASE now! ---");
+            return $request->user()->tasks()->latest()->get();
+        });
     }
 
     /**
@@ -44,6 +51,11 @@ class TaskController extends Controller
         }
 
         $task = $request->user()->tasks()->create($data);
+
+        Cache::forget("user_" . $request->user()->id . "_tasks_all");
+        Cache::forget("user_" . $request->user()->id . "_tasks_pending");
+        Cache::forget("user_" . $request->user()->id . "_tasks_in_progress");
+        Cache::forget("user_" . $request->user()->id . "_tasks_completed");
 
         return response()->json([
             'message' => 'Task created successfully',
@@ -91,6 +103,11 @@ class TaskController extends Controller
 
         $task->update($data);
 
+        Cache::forget("user_" . $request->user()->id . "_tasks_all");
+        Cache::forget("user_" . $request->user()->id . "_tasks_pending");
+        Cache::forget("user_" . $request->user()->id . "_tasks_in_progress");
+        Cache::forget("user_" . $request->user()->id . "_tasks_completed");
+
         return response()->json([
             'message' => 'Task updated successfully',
             'task' => $task
@@ -107,6 +124,11 @@ class TaskController extends Controller
         }
 
         $task->delete();
+
+        Cache::forget("user_" . $request->user()->id . "_tasks_all");
+        Cache::forget("user_" . $request->user()->id . "_tasks_pending");
+        Cache::forget("user_" . $request->user()->id . "_tasks_in_progress");
+        Cache::forget("user_" . $request->user()->id . "_tasks_completed");
 
         return response()->json(['message' => 'Task deleted successfully (Soft Deleted)']);
     }
