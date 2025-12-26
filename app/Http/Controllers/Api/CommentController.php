@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Comment;
 use App\Models\Task;
+use App\Notifications\CommentAdded;
 use Illuminate\Http\Request;
 
 class CommentController extends Controller
@@ -30,6 +31,8 @@ class CommentController extends Controller
             'content' => $request->content,
             'user_id' => $request->user()->id,
         ]);
+
+        $task->user->notify(new CommentAdded($comment));
 
         return response()->json([
             'message' => 'Comment added successfully',
