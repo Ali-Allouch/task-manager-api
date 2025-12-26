@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\TaskController;
+use App\Http\Controllers\Api\CommentController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -14,4 +15,8 @@ Route::get('/user', function (Request $request) {
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('tasks', TaskController::class);
+
+    Route::get('tasks/{task}/comments', [CommentController::class, 'index']);
+    Route::post('tasks/{task}/comments', [CommentController::class, 'store']);
+    Route::apiResource('comments', CommentController::class)->only(['show', 'update', 'destroy']);
 });
