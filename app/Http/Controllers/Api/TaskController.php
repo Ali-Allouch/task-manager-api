@@ -41,6 +41,7 @@ class TaskController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'status' => 'required|in:pending,in_progress,completed',
+            'attachment' => 'nullable|file|mimes:jpg,jpeg,png,pdf,docx|max:2048',
         ]);
 
         $data = $request->all();
@@ -86,8 +87,9 @@ class TaskController extends Controller
 
         $request->validate([
             'title' => 'sometimes|required|string|max:255',
+            'description' => 'nullable|string',
             'status' => 'sometimes|required|in:pending,in_progress,completed',
-            'attachment' => 'nullable|file|mimes:jpg,png,pdf,docx|max:2048',
+            'attachment' => 'nullable|file|mimes:jpg,jpeg,png,pdf,docx|max:2048',
         ]);
 
         $data = $request->all();
