@@ -13,8 +13,13 @@ namespace App\Http\Controllers;
  * )
  *
  * @OA\Server(
+ * url="http://localhost",
+ * description="Docker Sail Server (Default)"
+ * )
+ *
+ * @OA\Server(
  * url="http://127.0.0.1:8000",
- * description="Local Development Server"
+ * description="Local Development Server (php artisan serve)"
  * )
  * 
  * @OA\SecurityScheme(

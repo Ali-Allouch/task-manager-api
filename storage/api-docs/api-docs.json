@@ -10,8 +10,12 @@
     },
     "servers": [
         {
+            "url": "http://localhost",
+            "description": "Docker Sail Server (Default)"
+        },
+        {
             "url": "http://127.0.0.1:8000",
-            "description": "Local Development Server"
+            "description": "Local Development Server (php artisan serve)"
         }
     ],
     "paths": {
