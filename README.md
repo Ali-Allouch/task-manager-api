@@ -36,6 +36,10 @@ To run this project locally, follow these steps in your **WSL/Ubuntu terminal**:
    ```bash
    ./vendor/bin/sail artisan migrate
 
+5. **Generate API Documentation:**
+   ```bash
+   ./vendor/bin/sail artisan l5-swagger:generate
+
 ## 📖 API Documentation & Monitoring
 * **Swagger UI:** Accessible at [http://localhost/api/documentation](http://localhost/api/documentation) to explore and test endpoints interactively.
 * **Mailpit:** Monitor sent emails at [http://localhost:8025](http://localhost:8025).
