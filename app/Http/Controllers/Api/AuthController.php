@@ -112,4 +112,29 @@ class AuthController extends Controller
             'token_type' => 'Bearer',
         ]);
     }
+
+    /**
+     * @OA\Post(
+     * path="/api/logout",
+     * summary="Logout and revoke token",
+     * tags={"Authentication"},
+     * security={{"sanctum":{}}},
+     * @OA\Response(
+     * response=200,
+     * description="Logged out successfully",
+     * @OA\JsonContent(
+     * @OA\Property(property="message", type="string", example="Logged out successfully")
+     * )
+     * ),
+     * @OA\Response(
+     * response=401,
+     * description="Unauthenticated"
+     * )
+     * )
+     */
+    public function logout(Request $request)
+    {
+        $request->user()->currentAccessToken()->delete();
+        return response()->json(['message' => 'Logged out successfully']);
+    }
 }
