@@ -46,12 +46,12 @@ class TaskController extends Controller
         return Cache::remember($cacheKey, 3600, function () use ($request) {
             $query = $request->user()->tasks();
 
-            if ($request->has('status')) {
+            if ($request->has('status') && $request->status !== 'all') {
                 $query->where('status', $request->status);
             }
 
             Log::info("--- I am fetching from the DATABASE now! ---");
-            return $request->user()->tasks()->latest()->get();
+            return $query->latest()->get();
         });
     }
 
