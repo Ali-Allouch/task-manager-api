@@ -569,6 +569,57 @@
                     }
                 ]
             }
+        },
+        "/api/tasks/{id}/download": {
+            "get": {
+                "tags": [
+                    "Tasks"
+                ],
+                "summary": "Download task attachment.",
+                "description": "Only the task owner is allowed to download the attached file from private storage.",
+                "operationId": "4adc7b076bacc7e970ad2c8b663605b9",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Task ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "File found and download started",
+                        "headers": {
+                            "Content-Type": {
+                                "description": "Type of returned file",
+                                "schema": {
+                                    "type": "string"
+                                }
+                            },
+                            "Content-Disposition": {
+                                "description": "Download settings and file name",
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Not allowed - The user is not the owner of this task."
+                    },
+                    "404": {
+                        "description": "The file does not exist or the task does not contain an attachment."
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
         }
     },
     "components": {

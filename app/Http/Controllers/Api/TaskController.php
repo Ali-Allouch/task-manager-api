@@ -99,7 +99,7 @@ class TaskController extends Controller
         $data = $request->all();
 
         if ($request->hasFile('attachment')) {
-            $path = $request->file('attachment')->store('tasks', config('filesystems.default'));
+            $path = $request->file('attachment')->store('tasks_attachments', 'local');
             $data['attachment'] = $path;
         }
 
@@ -204,10 +204,10 @@ class TaskController extends Controller
 
         if ($request->hasFile('attachment')) {
             if ($task->attachment) {
-                Storage::disk(config('filesystems.default'))->delete($task->attachment);
+                Storage::disk('local')->delete($task->attachment);
             }
 
-            $path = $request->file('attachment')->store('tasks', config('filesystems.default'));
+            $path = $request->file('attachment')->store('tasks_attachments', 'local');
             $data['attachment'] = $path;
         }
 
@@ -252,6 +252,12 @@ class TaskController extends Controller
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
+        if ($task->attachment) {
+            if (Storage::disk('local')->exists($task->attachment)) {
+                Storage::disk('local')->delete($task->attachment);
+            }
+        }
+
         $task->delete();
 
         Cache::forget("user_" . $request->user()->id . "_tasks_all");
@@ -260,5 +266,54 @@ class TaskController extends Controller
         Cache::forget("user_" . $request->user()->id . "_tasks_completed");
 
         return response()->json(['message' => 'Task deleted successfully (Soft Deleted)']);
+    }
+
+    /**
+     * @OA\Get(
+     * path="/api/tasks/{id}/download",
+     * summary="Download task attachment.",
+     * description="Only the task owner is allowed to download the attached file from private storage.",
+     * tags={"Tasks"},
+     * security={{"bearerAuth":{}}},
+     * @OA\Parameter(
+     * name="id",
+     * in="path",
+     * required=true,
+     * description="Task ID",
+     * @OA\Schema(type="integer")
+     * ),
+     * @OA\Response(
+     * response=200,
+     * description="File found and download started",
+     * @OA\Header(header="Content-Type", description="Type of returned file", @OA\Schema(type="string")),
+     * @OA\Header(header="Content-Disposition", description="Download settings and file name", @OA\Schema(type="string"))
+     * ),
+     * @OA\Response(
+     * response=403,
+     * description="Not allowed - The user is not the owner of this task."
+     * ),
+     * @OA\Response(
+     * response=404,
+     * description="The file does not exist or the task does not contain an attachment."
+     * )
+     * )
+     */
+    public function download(Request $request, Task $task)
+    {
+        if ($task->user_id !== $request->user()->id) {
+            abort(403, 'You do not have access to this file.');
+        }
+
+        if (!$task->attachment) {
+            abort(404, 'No attachment associated with this task.');
+        }
+
+        if (!Storage::disk('local')->exists($task->attachment)) {
+            abort(404, 'The file does not exist on the server.');
+        }
+
+        $fullPath = Storage::disk('local')->path($task->attachment);
+
+        return response()->download($fullPath);
     }
 }

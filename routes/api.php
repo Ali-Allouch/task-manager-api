@@ -18,6 +18,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('tasks/{task}/comments', [CommentController::class, 'index']);
     Route::post('tasks/{task}/comments', [CommentController::class, 'store']);
+    Route::get('tasks/{task}/download', [TaskController::class, 'download']);
     Route::apiResource('comments', CommentController::class)->only(['show', 'update', 'destroy']);
 
     Route::post('/logout', [AuthController::class, 'logout']);
