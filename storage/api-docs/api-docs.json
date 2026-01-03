@@ -371,6 +371,14 @@
                                 "completed"
                             ]
                         }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Search in title or description",
+                        "schema": {
+                            "type": "string"
+                        }
                     }
                 ],
                 "responses": {

@@ -27,6 +27,12 @@ class TaskController extends Controller
      * required=false,
      * @OA\Schema(type="string", enum={"pending", "in_progress", "completed"})
      * ),
+     * @OA\Parameter(
+     * name="search", 
+     * in="query", 
+     * description="Search in title or description", 
+     * @OA\Schema(type="string")
+     * ),
      * @OA\Response(
      * response=200,
      * description="Tasks retrieved successfully"
@@ -41,13 +47,21 @@ class TaskController extends Controller
     {
         $userId = $request->user()->id;
         $status = $request->query('status', 'all');
-        $cacheKey = "user_{$userId}_tasks_{$status}";
+        $search = $request->query('search', '');
+        $cacheKey = "user_{$userId}_tasks_{$status}_search_" . md5($search);
 
         return Cache::remember($cacheKey, 3600, function () use ($request) {
             $query = $request->user()->tasks();
 
             if ($request->has('status') && $request->status !== 'all') {
                 $query->where('status', $request->status);
+            }
+
+            if ($request->has('search') && !empty($request->search)) {
+                $query->where(function ($q) use ($request) {
+                    $q->where('title', 'like', '%' . $request->search . '%')
+                        ->orWhere('description', 'like', '%' . $request->search . '%');
+                });
             }
 
             Log::info("--- I am fetching from the DATABASE now! ---");
