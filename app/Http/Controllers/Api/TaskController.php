@@ -316,4 +316,33 @@ class TaskController extends Controller
 
         return response()->download($fullPath);
     }
+    /**
+     * @OA\Delete(
+     * path="/api/tasks/{id}/attachment",
+     * summary="Remove task attachment.",
+     * tags={"Tasks"},
+     * security={{"bearerAuth":{}}},
+     * @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     * @OA\Response(response=200, description="Attachment successfully removed."),
+     * @OA\Response(response=403, description="You do not have access to this file.")
+     * )
+     */
+    public function removeAttachment(Request $request, Task $task)
+    {
+        if ($task->user_id !== $request->user()->id) {
+            abort(403, 'You do not have access to this file.');
+        }
+
+        if ($task->attachment) {
+            if (Storage::disk('local')->exists($task->attachment)) {
+                Storage::disk('local')->delete($task->attachment);
+            }
+
+            $task->update(['attachment' => null]);
+
+            return response()->json(['message' => 'Attachment successfully removed.']);
+        }
+
+        return response()->json(['message' => 'No attachment found.'], 404);
+    }
 }

@@ -620,6 +620,38 @@
                     }
                 ]
             }
+        },
+        "/api/tasks/{id}/attachment": {
+            "delete": {
+                "tags": [
+                    "Tasks"
+                ],
+                "summary": "Remove task attachment.",
+                "operationId": "088f7d33ed0b4637579fc41d69739a3a",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Attachment successfully removed."
+                    },
+                    "403": {
+                        "description": "You do not have access to this file."
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
         }
     },
     "components": {
