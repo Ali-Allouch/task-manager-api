@@ -86,6 +86,8 @@ class CommentController extends Controller
             'user_id' => $request->user()->id,
         ]);
 
+        $comment->load('user');
+
         $task->user->notify(new CommentAdded($comment));
 
         return response()->json([
